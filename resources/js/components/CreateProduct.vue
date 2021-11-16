@@ -107,6 +107,7 @@ export default {
         InputTag
     },
     props: {
+        product:Object,
         variants: {
             type: Array,
             required: true
@@ -180,6 +181,7 @@ export default {
         // store product into database
         saveProduct() {
             let product = {
+                id:this.product?this.product.id:'',
                 title: this.product_name,
                 sku: this.product_sku,
                 description: this.description,
@@ -189,8 +191,8 @@ export default {
             }
 
 
-            axios.post('/product', product).then(response => {
-                console.log(response.data);
+            axios.post('http://127.0.0.1:8000/api/product/store', product).then(response => {
+                // console.log(response.data);
             }).catch(error => {
                 console.log(error);
             })
@@ -201,6 +203,11 @@ export default {
 
     },
     mounted() {
+           if(this.product){
+        this.product_name = this.product.title;
+        this.product_sku = this.product.sku;
+        this.description = this.product.description;
+        }
         console.log('Component mounted.')
     }
 }

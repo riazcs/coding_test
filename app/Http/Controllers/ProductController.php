@@ -6,7 +6,9 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ProductVariantPrice;
 use App\Models\Variant;
+use Dotenv\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -15,9 +17,23 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Http\Response|\Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('products.index');
+        if(!empty($request->title)){
+            $products=Product::where('title','like','%'.$request->title.'%')->paginate(10);
+        }
+        if(!empty($request->variant)){
+            $products=Product::with('variant')->where('variant_id',$request->variant)->paginate(10);
+        }
+        if(!empty($request->date)){
+            $products=Product::where('created_at',$request->date)->paginate(10);
+        }
+        if(!empty($request->price_from) && !empty($request->price_to)){
+            $products=Product::with('product_price_variant')->wehere('price','>=',$request->price ,'&&' ,'price','=<',$request->price_to)->paginate(10);
+        }
+        $products = Product::paginate(10);
+        $product_varients = ProductVariant::get();
+        return view('products.index',compact('products','product_varients'));
     }
 
     /**
@@ -39,7 +55,47 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request->all());
+        $this->validate($request, [
+            'title' => 'required'
+        ]);
+        $product =Product::find($request->id);
+        try {
+            DB::beginTransaction();
+            $product = Product::updateOrCreate(
+                [
+                    'id' => $product->id,
+                ],[
+                'title'=>$request->title,
+                'sku'=>$request->sku,
+                'description'=>$request->description
+            ]);
 
+            if (!empty($product)){
+//                 if(!empty($request->beds) && count($request->beds) > 0){
+//                     $beds = [];
+//                     foreach ($request->beds as $bed){
+//                         array_push($beds, [
+// //                            'room_id'=>$room->id,
+//                             'bed_type'=>$bed['bed_type'],
+//                             'bed_size'=>$bed['bed_size'],
+//                         ]);
+//                     }
+
+//                     if(!empty($beds) && count($beds) > 0){
+//                         $room->beds()->createMany($beds);
+//                     }
+//                 }
+
+                DB::commit();
+                return redirect()->route('product.index')->with('success', 'New product added successfully');
+            }
+
+            throw new \Exception('Invalid information');
+        }catch (\Exception $ex){
+            DB::rollBack();
+            return redirect()->back()->with('error', $ex->getMessage());
+        }
     }
 
 
@@ -63,7 +119,8 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $variants = Variant::all();
-        return view('products.edit', compact('variants'));
+        $product = Product::find($product->id);
+        return view('products.edit', compact('variants','product'));
     }
 
     /**

@@ -15,7 +15,10 @@
                 </div>
                 <div class="col-md-2">
                     <select name="variant" id="" class="form-control">
-
+                        <option slected value="">--Select variant--</option>
+                        @foreach($product_varients as $verient)
+                         <option value="{{ $verient->variant_id }}">{{$verient->variant}}</option>
+                         @endforeach
                     </select>
                 </div>
 
@@ -51,11 +54,12 @@
                     </thead>
 
                     <tbody>
-
+                     @php ($i=0)
+                     @foreach($products as $product)
                     <tr>
-                        <td>1</td>
-                        <td>T-Shirt <br> Created at : 25-Aug-2020</td>
-                        <td>Quality product in low cost</td>
+                        <td>{{++$i}}</td>
+                        <td>{{$product->title}}<br> Created at : {{$product->created_at}}</td>
+                        <td>{{$product->description}}</td>
                         <td>
                             <dl class="row mb-0" style="height: 80px; overflow: hidden" id="variant">
 
@@ -73,11 +77,11 @@
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ route('product.edit', 1) }}" class="btn btn-success">Edit</a>
+                                <a href="{{ route('product.edit', $product->id) }}" class="btn btn-success">Edit</a>
                             </div>
                         </td>
                     </tr>
-
+                     @endforeach
                     </tbody>
 
                 </table>

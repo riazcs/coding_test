@@ -2021,6 +2021,7 @@ __webpack_require__.r(__webpack_exports__);
     InputTag: vue_input_tag__WEBPACK_IMPORTED_MODULE_2___default.a
   },
   props: {
+    product: Object,
     variants: {
       type: Array,
       required: true
@@ -2101,6 +2102,7 @@ __webpack_require__.r(__webpack_exports__);
     // store product into database
     saveProduct: function saveProduct() {
       var product = {
+        id: this.product ? this.product.id : '',
         title: this.product_name,
         sku: this.product_sku,
         description: this.description,
@@ -2108,8 +2110,7 @@ __webpack_require__.r(__webpack_exports__);
         product_variant: this.product_variant,
         product_variant_prices: this.product_variant_prices
       };
-      axios.post('/product', product).then(function (response) {
-        console.log(response.data);
+      axios.post('http://127.0.0.1:8000/api/product/store', product).then(function (response) {// console.log(response.data);
       })["catch"](function (error) {
         console.log(error);
       });
@@ -2117,6 +2118,12 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   mounted: function mounted() {
+    if (this.product) {
+      this.product_name = this.product.title;
+      this.product_sku = this.product.sku;
+      this.description = this.product.description;
+    }
+
     console.log('Component mounted.');
   }
 });
@@ -63300,8 +63307,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /home/rifat/Programming/mediusware/interview/interview-question-sr/resources/js/app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! /home/rifat/Programming/mediusware/interview/interview-question-sr/resources/sass/app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\xampp\htdocs\interview-question-sr\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\xampp\htdocs\interview-question-sr\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ })
