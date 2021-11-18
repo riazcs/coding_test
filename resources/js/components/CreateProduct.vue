@@ -24,8 +24,8 @@
                         <h6 class="m-0 font-weight-bold text-primary">Media</h6>
                     </div>
                     <div class="card-body border">
-                        <vue-dropzone ref="myVueDropzone" id="dropzone" :options="dropzoneOptions"></vue-dropzone>
-                    </div>
+                        <vue-dropzone ref="myVueDropzone" id="dropzone" :options="dropzoneOptions"  v-on:vdropzone-file-added="fileAdded"></vue-dropzone>
+                     </div>
                 </div>
             </div>
 
@@ -35,13 +35,13 @@
                         <h6 class="m-0 font-weight-bold text-primary">Variants</h6>
                     </div>
                     <div class="card-body">
-                        <div class="row" v-for="(item,index) in product_variant">
+                        <div class="row" v-for="(item,index) in product_variant" :key="index">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="">Option</label>
                                     <select v-model="item.option" class="form-control">
                                         <option v-for="variant in variants"
-                                                :value="variant.id">
+                                                :value="variant.id" :key="variant.id">
                                             {{ variant.title }}
                                         </option>
                                     </select>
@@ -74,7 +74,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr v-for="variant_price in product_variant_prices">
+                                <tr v-for="variant_price in product_variant_prices" :key="variant_price.id">
                                     <td>{{ variant_price.title }}</td>
                                     <td>
                                         <input type="text" class="form-control" v-model="variant_price.price">
@@ -118,7 +118,7 @@ export default {
             product_name: '',
             product_sku: '',
             description: '',
-            images: [],
+            image: '',
             product_variant: [
                 {
                     option: this.variants[0].id,
@@ -127,7 +127,7 @@ export default {
             ],
             product_variant_prices: [],
             dropzoneOptions: {
-                url: 'https://httpbin.org/post',
+                url: 'http://127.0.0.1:8000/api/upload-product-image',
                 thumbnailWidth: 150,
                 maxFilesize: 0.5,
                 headers: {"My-Awesome-Header": "header value"}
@@ -135,12 +135,17 @@ export default {
         }
     },
     methods: {
+         fileAdded: function(file) {
+             this.image = file.name;
+      console.log(file);
+      console.log("data url: " + file.data);
+    },
         // it will push a new object into product variant
         newVariant() {
             let all_variants = this.variants.map(el => el.id)
             let selected_variants = this.product_variant.map(el => el.option);
             let available_variants = all_variants.filter(entry1 => !selected_variants.some(entry2 => entry1 == entry2))
-            // console.log(available_variants)
+            console.log(available_variants)
 
             this.product_variant.push({
                 option: available_variants[0],
@@ -181,11 +186,11 @@ export default {
         // store product into database
         saveProduct() {
             let product = {
-                id:this.product?this.product.id:'',
+                // id:this.product?this.product.id:'',
                 title: this.product_name,
                 sku: this.product_sku,
                 description: this.description,
-                product_image: this.images,
+                product_image: this.image,
                 product_variant: this.product_variant,
                 product_variant_prices: this.product_variant_prices
             }
@@ -208,7 +213,6 @@ export default {
         this.product_sku = this.product.sku;
         this.description = this.product.description;
         }
-        console.log('Component mounted.')
     }
 }
 </script>

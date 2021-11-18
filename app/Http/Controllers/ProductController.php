@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Models\ProductVariantPrice;
 use App\Models\Variant;
 use Dotenv\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 
 class ProductController extends Controller
 {
@@ -59,12 +61,12 @@ class ProductController extends Controller
         $this->validate($request, [
             'title' => 'required'
         ]);
-        $product =Product::find($request->id);
+        $product = Product::find($request->id);
         try {
             DB::beginTransaction();
-            $product = Product::updateOrCreate(
+            $product = Product::Create(
                 [
-                    'id' => $product->id,
+                    'id'=>$request->id
                 ],[
                 'title'=>$request->title,
                 'sku'=>$request->sku,
@@ -72,6 +74,10 @@ class ProductController extends Controller
             ]);
 
             if (!empty($product)){
+                $product_image = ProductImage::create([
+                    'product_id' => $product->id,
+                    'file_path' => session()->get('file_path'),
+                ]);
 //                 if(!empty($request->beds) && count($request->beds) > 0){
 //                     $beds = [];
 //                     foreach ($request->beds as $bed){
@@ -88,7 +94,8 @@ class ProductController extends Controller
 //                 }
 
                 DB::commit();
-                return redirect()->route('product.index')->with('success', 'New product added successfully');
+                return response()->json('success');
+                // return redirect()->route('product.index')->with('success', 'New product added successfully');
             }
 
             throw new \Exception('Invalid information');
@@ -144,5 +151,25 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         //
+    }
+
+    public function upload_image(Request $request)
+    {
+        // dd($request->all());
+        $result = [];
+        $name = $request->file('file')->getClientOriginalName();
+        $path = $request->file('file')->store('images/product');
+        
+        if(!empty($path)){
+            $result['result'] = 'success';
+            $result['message'] = 'Image Upload Successfully.';
+            $result['path'] = URL::to('/').'/storage/'.$path;
+            session()->put('file_path', $result['path']);
+        // dd(session()->get('file_path'));
+        } else{
+            $result['result'] = 'error';
+            $result['message'] = 'Image Upload Failed.';
+        }
+        return response()->json($result);
     }
 }
